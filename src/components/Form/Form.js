@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
+import { connect, useDispatch, useSelector } from 'react-redux';
+import contactsActions from '../../redux/contacts/contacts-actions';
 import s from './Form.module.css';
 
-export default function Form({ onSubmit, onCheckUnique }) {
+function Form() {
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
+  const contacts = useSelector(state => state.contacts.items);
+  const dispatch = useDispatch();
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -25,9 +28,16 @@ export default function Form({ onSubmit, onCheckUnique }) {
 
   const handleSubmit = e => {
     e.preventDefault();
-    const isUnicName = onCheckUnique(name);
-    if (!isUnicName) return;
-    onSubmit({ name, number });
+
+    const contactCoincide = contacts.find(
+      prevContact => prevContact.name === name,
+    );
+    if (contactCoincide) {
+      alert(`${contactCoincide.name} is already in contacts`);
+      return;
+    }
+
+    dispatch(contactsActions.addContact({ name, number }));
     reset();
   };
 
@@ -71,7 +81,9 @@ export default function Form({ onSubmit, onCheckUnique }) {
   );
 }
 
-Form.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-  onCheckUnique: PropTypes.func.isRequired,
-};
+const mapDispatchToProps = dispatch => ({
+  onSubmit: (name, number) =>
+    dispatch(contactsActions.addContact(name, number)),
+});
+
+export default connect(null, mapDispatchToProps)(Form);
