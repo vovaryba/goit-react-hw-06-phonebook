@@ -1,11 +1,21 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import { useSelector, useDispatch } from 'react-redux';
+import actions from '../../redux/contacts/contacts-actions';
 import Contact from './Contact';
 
-const ContactsList = ({ contacts, onDeleteContact }) => {
+const ContactsList = () => {
+  const contacts = useSelector(state => state.contacts.items);
+  const filter = useSelector(state => state.contacts.filter);
+  const dispatch = useDispatch();
+
+  const visibleContacts = contacts.filter(({ name }) =>
+    name.toLowerCase().includes(filter.toLowerCase()),
+  );
+
+  const onDeleteContact = id => dispatch(actions.deleteContact(id));
+
   return (
     <ul>
-      {contacts.map(({ id, name, number }) => (
+      {visibleContacts.map(({ id, name, number }) => (
         <Contact
           key={id}
           name={name}
@@ -15,11 +25,6 @@ const ContactsList = ({ contacts, onDeleteContact }) => {
       ))}
     </ul>
   );
-};
-
-ContactsList.propTypes = {
-  contacts: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onDeleteContact: PropTypes.func.isRequired,
 };
 
 export default ContactsList;
